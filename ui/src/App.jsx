@@ -2,9 +2,8 @@ import React, { useEffect, useMemo, useReducer, useRef } from "react";
 import { createWs } from "./api/ws.js";
 import { initialState, reducer } from "./state/store.js";
 import StatusBar from "./components/StatusBar.jsx";
-import Lobby from "./components/Lobby.jsx";
-import ChatWindow from "./components/ChatWindow.jsx";
-import Composer from "./components/Composer.jsx";
+import DiscoverScreen from "./components/DiscoverScreen.jsx";
+import ConversationScreen from "./components/ConversationScreen.jsx";
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -20,18 +19,7 @@ export default function App() {
     return () => ws.close();
   }, []);
 
-  const send = (cmd) => wsRef.current && wsRef.current.send(cmd);
-
-  const { role, state: connState } = state.status;
-  const inChat =
-    role === "host" || (role === "member" && connState === "connected");
-
-  // Clear the transcript when a fresh session starts.
-  const prevInChat = useRef(false);
-  useEffect(() => {
-    if (inChat && !prevInChat.current) dispatch({ type: "reset_messages" });
-    prevInChat.current = inChat;
-  }, [inChat]);
+  const send = (cmd) => wsRef.current?.send(cmd);
 
   const api = useMemo(
     () => ({
@@ -47,26 +35,27 @@ export default function App() {
     []
   );
 
+  const { role, state: connState } = state.status;
+  const inChat = role === "host" || (role === "member" && connState === "connected");
+
+  // Clear the transcript when a fresh conversation starts.
+  const prevInChat = useRef(false);
+  useEffect(() => {
+    if (inChat && !prevInChat.current) dispatch({ type: "reset_messages" });
+    prevInChat.current = inChat;
+  }, [inChat]);
+
   return (
     <div className="app">
       <StatusBar
-        status={state.status}
         connected={state.connected}
         error={state.error}
         onDismissError={() => dispatch({ type: "dismiss_error" })}
       />
       {inChat ? (
-        <div className="chat">
-          <ChatWindow
-            messages={state.messages}
-            members={state.members}
-            status={state.status}
-            onLeave={role === "host" ? api.stopHost : api.leave}
-          />
-          <Composer onSend={api.sendMsg} />
-        </div>
+        <ConversationScreen state={state} api={api} />
       ) : (
-        <Lobby state={state} api={api} />
+        <DiscoverScreen state={state} api={api} connected={state.connected} />
       )}
     </div>
   );
