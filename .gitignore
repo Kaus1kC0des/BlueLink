@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.vscode/
+*.pyc
+*.egg-info/
+
+# Node / UI build
+ui/node_modules/
+ui/dist/
+
+# Local runtime data / logs
+*.log

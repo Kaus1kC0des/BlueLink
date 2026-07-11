@@ -1,0 +1,18 @@
+# Runtime dependencies for the BlueLink companion service.
+# REQUIRES Python 3.11 (see note below). Set up once while online, before going
+# off-grid, using a 3.11 interpreter — e.g. via conda:
+#   conda create -n bl311 python=3.11 && conda activate bl311
+#   pip install -r requirements.txt
+# bless 0.2.6 imports the standalone `bleak_winrt` module, which bleak bundled
+# only through 0.20.x. bleak 0.21 dropped it. `bleak_winrt` wheels also stop at
+# CP311 — so this stack requires Python 3.11, not 3.12+.
+bleak==0.20.2
+bless==0.2.6
+# bless's WinRT backend imports pysetupdi, which it does not declare and which
+# is not on PyPI. Must be installed from source:
+pysetupdi @ git+https://github.com/gwangyi/pysetupdi.git
+fastapi>=0.110
+uvicorn[standard]>=0.27
+
+# Dev/test only:
+#   pip install pytest pytest-asyncio httpx
